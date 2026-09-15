@@ -231,8 +231,12 @@ function perbaruiJam() {
 
   var tanggalHijri = '';
   try {
-    tanggalHijri = new Intl.DateTimeFormat('id-ID-u-ca-islamic', { day: 'numeric', month: 'long', year: 'numeric' }).format(now) + ' H';
-  } catch (e) {}
+    tanggalHijri = new Intl.DateTimeFormat('id-ID-u-ca-islamic-umalqura', {
+      day: 'numeric', month: 'long', year: 'numeric'
+    }).format(now) + ' H';
+  } catch (e) {
+    tanggalHijri = '';
+  }
 
   document.getElementById('tanggalHijriMasehi').innerText = tanggalMasehi + (tanggalHijri ? ' | ' + tanggalHijri : '');
 
