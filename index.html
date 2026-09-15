@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Dashboard Posting Otomatis</title>
+<title>Jasa Aqiqah Depok SOSMED</title>
+<link rel="icon" type="image/png" href="logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
@@ -15,7 +16,9 @@
 *{box-sizing:border-box;}
 body{margin:0;font-family:'Poppins',sans-serif;background:linear-gradient(160deg,#0f172a,#1e293b);color:var(--text);padding:24px;}
 .header{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;align-items:flex-start;margin-bottom:20px;}
-.header h1{margin:0;font-size:26px;font-weight:700;background:linear-gradient(90deg,var(--accent),#818cf8);-webkit-background-clip:text;color:transparent;}
+.brand{display:flex;align-items:center;gap:14px;}
+.logo{width:54px;height:54px;border-radius:50%;object-fit:cover;box-shadow:0 0 12px rgba(56,189,248,0.45);flex-shrink:0;}
+.header h1{margin:0;font-size:24px;font-weight:700;background:linear-gradient(90deg,var(--accent),#818cf8);-webkit-background-clip:text;color:transparent;}
 .tanggal{text-align:right;color:var(--muted);font-size:13px;}
 .jam{font-size:24px;font-weight:700;color:var(--text);}
 .panel{background:var(--panel);border-radius:14px;padding:16px 20px;margin-bottom:16px;box-shadow:0 4px 20px rgba(0,0,0,0.35);}
@@ -53,12 +56,37 @@ tr:hover{background:#22314654;}
 .refresh-btn:hover{opacity:.85;}
 .refresh-info{font-size:12px;color:var(--muted);margin-bottom:14px;}
 .badge-demo{display:inline-block;background:#334155;color:var(--accent);font-size:11px;padding:3px 10px;border-radius:20px;margin-left:8px;vertical-align:middle;}
+
+/* Tombol scroll atas/bawah */
+.scroll-buttons{position:fixed;right:20px;bottom:24px;display:flex;flex-direction:column;gap:10px;z-index:999;}
+.scroll-buttons button{width:46px;height:46px;border-radius:50%;border:none;background:var(--accent);color:#0f172a;font-size:20px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,0.45);}
+.scroll-buttons button:hover{opacity:.85;}
+
+/* Footer */
+.footer{text-align:center;margin-top:32px;padding:18px 10px;color:var(--muted);font-size:13px;border-top:1px solid #334155;}
+.footer a{color:var(--accent);font-weight:600;text-decoration:none;}
+.footer a:hover{text-decoration:underline;}
+
+/* Tabel responsif untuk mobile: diubah jadi tata letak kartu */
+@media (max-width:700px){
+  .header{flex-direction:column;}
+  .tanggal{text-align:left;}
+  table, thead, tbody, th, td, tr{display:block;width:100%;}
+  thead{display:none;}
+  .table-wrap table tr{margin-bottom:12px;border:1px solid #334155;border-radius:12px;padding:6px 0;background:var(--panel2);}
+  .table-wrap table td{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid #334155;font-size:13px;}
+  .table-wrap table td:last-child{border-bottom:none;}
+  .table-wrap table td::before{content:attr(data-label);font-weight:600;color:var(--accent);margin-right:10px;}
+}
 </style>
 </head>
 <body>
 
 <div class="header">
-  <h1>Dashboard Posting Otomatis <span class="badge-demo">LIVE VIEW</span></h1>
+  <div class="brand">
+    <img src="logo.png" alt="Logo Ishbiruu Media" class="logo">
+    <h1>Jasa Aqiqah Depok SOSMED <span class="badge-demo">LIVE VIEW</span></h1>
+  </div>
   <div class="tanggal">
     <div id="tanggalHijriMasehi"></div>
     <div class="jam" id="jamSekarang"></div>
@@ -95,6 +123,15 @@ tr:hover{background:#22314654;}
     </table>
   </div>
   <div class="schedule-panel" id="schedulePanel"></div>
+</div>
+
+<footer class="footer">
+  Ishbiruu Media &copy; 2026 - <a href="https://wa.me/6281413333513" target="_blank">0814-1333-3513</a>
+</footer>
+
+<div class="scroll-buttons">
+  <button onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Gulir ke atas">&#8679;</button>
+  <button onclick="window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'})" title="Gulir ke bawah">&#8681;</button>
 </div>
 
 <script>
@@ -158,65 +195,9 @@ function tampilkanData(data) {
   data.rows.forEach(function (row) {
     var tr = document.createElement('tr');
     tr.innerHTML =
-      '<td>' + row.judul + '</td>' +
-      '<td>' + row.lokasi + '</td>' +
-      '<td>' + row.jadwal + '</td>' +
-      '<td>' + statusHtml(row.statusFB, row.linkFB) + '</td>' +
-      '<td>' + statusHtml(row.statusIG, row.linkIG) + '</td>';
-    tbody.appendChild(tr);
-  });
-
-  var schedulePanel = document.getElementById('schedulePanel');
-  schedulePanel.innerHTML = '';
-  var antrean = data.rows
-    .filter(function (r) { return r.timestamp && !r.sudahSelesai; })
-    .sort(function (a, b) { return a.timestamp - b.timestamp; });
-
-  if (antrean.length === 0) {
-    schedulePanel.innerHTML = '<div class="schedule-item">Tidak ada naskah terjadwal.</div>';
-  }
-
-  antrean.forEach(function (item) {
-    var icon = item.timestamp < Date.now() ? '<span class="jam-icon">&#9203;</span>' : '<span class="cek">&#10003;</span>';
-    var div = document.createElement('div');
-    div.className = 'schedule-item';
-    div.innerHTML = '<div><span class="waktu">' + item.jadwal + '</span> - ' + item.judul + '</div>' + icon;
-    schedulePanel.appendChild(div);
-  });
-}
-
-function perbaruiJam() {
-  var now = new Date();
-  document.getElementById('jamSekarang').innerText = now.toLocaleTimeString('id-ID');
-
-  var opsiMasehi = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
-  var tanggalMasehi = now.toLocaleDateString('id-ID', opsiMasehi);
-
-  var tanggalHijri = '';
-  try {
-    tanggalHijri = new Intl.DateTimeFormat('id-ID-u-ca-islamic', { day: 'numeric', month: 'long', year: 'numeric' }).format(now) + ' H';
-  } catch (e) {}
-
-  document.getElementById('tanggalHijriMasehi').innerText = tanggalMasehi + (tanggalHijri ? ' | ' + tanggalHijri : '');
-
-  if (targetCountdown) {
-    var selisih = targetCountdown - now;
-    if (selisih > 0) {
-      var jam = Math.floor(selisih / 3600000);
-      var menit = Math.floor((selisih % 3600000) / 60000);
-      var detik = Math.floor((selisih % 60000) / 1000);
-      var teks = (jam < 10 ? '0' : '') + jam + ':' + (menit < 10 ? '0' : '') + menit + ':' + (detik < 10 ? '0' : '') + detik;
-      document.getElementById('countdown').innerText = '(' + teks + ')';
-    } else {
-      document.getElementById('countdown').innerText = '';
-    }
-  }
-}
-
-muatData();
-perbaruiJam();
-setInterval(muatData, 15000);
-setInterval(perbaruiJam, 1000);
-</script>
-</body>
-</html>
+      '<td data-label="Judul">' + row.judul + '</td>' +
+      '<td data-label="Lokasi">' + row.lokasi + '</td>' +
+      '<td data-label="Jadwal">' + row.jadwal + '</td>' +
+      '<td data-label="Status FB">' + statusHtml(row.statusFB, row.linkFB) + '</td>' +
+      '<td data-label="Status IG">' + statusHtml(row.statusIG, row.linkIG) + '</td>';
+    tbody.appendChild(
