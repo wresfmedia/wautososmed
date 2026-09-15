@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AUTO POST</title>
+  <link rel="icon" type="image/png" href="logo-sj.png">
+  <style>
+    /* ... (semua CSS tetap sama persis seperti punyamu, tidak ada perubahan) ... */
+  </style>
+</head>
+<body>
+  <div class="marquee-bar">
+    <span class="marquee-track">Ishbiruu Tech: Hadirkan solusi tepat, bantu atasi tantangan Anda dengan cepat | 08141-3333-513 | wied.web.id</span>
+  </div>
+
+  <div class="header">
+    <div class="header-brand">
+      <img src="logo-sj.png" alt="Susu Juragan">
+      <h1>AUTO POST</h1>
+    </div>
+    <div class="tanggal">
+      <div id="tanggalHijriMasehi"></div>
+      <div class="jam" id="jamSekarang"></div>
+    </div>
+  </div>
+
+  <button class="refresh-btn" onclick="bukaModalPassword()">⚙️ Pengaturan</button>
+  <div class="refresh-info">Memperbarui data otomatis setiap 15 detik</div>
+
+  <div class="error-box" id="errorBox"></div>
+
+  <div class="panel status-panel">
+    <span class="dot" id="statusDot"></span>
+    <span id="statusTeks">Memuat status sistem...</span>
+  </div>
+
+  <div class="panel info-panel">
+    <p>Terakhir diperbarui: <strong id="waktuUpdate">-</strong></p>
+    <p>Posting berikutnya: <span class="highlight" id="jadwalBerikutnya">-</span> <span id="countdown"></span></p>
+  </div>
+
+  <div class="cards" id="cards"></div>
+
+  <div class="main-content">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Judul</th>
+            <th>Lokasi</th>
+            <th>Jadwal</th>
+            <th>Status FB</th>
+            <th>Status IG</th>
+          </tr>
+        </thead>
+        <tbody id="tabelBody"></tbody>
+      </table>
+    </div>
+    <div class="schedule-panel" id="schedulePanel"></div>
+  </div>
+
+  <div class="footer">
+    Ishbiruu Tech &copy; 2026 - <a href="tel:081413333513">08141-3333-513</a> | <a href="https://wied.web.id" target="_blank">wied.web.id</a>
+  </div>
+
+  <div class="scroll-buttons">
+    <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" title="Scroll ke atas">▲</button>
+    <button onclick="window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'})" title="Scroll ke bawah">▼</button>
+  </div>
+
+  <!-- Modal Password & Panel Pengaturan: SAMA PERSIS seperti kode aslimu, tidak ada perubahan -->
+
+  <script>
+    var WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwrXikY8vbiC87QnQlZ-Okjzl9qJ9Qmpb3kHyKVizOUY-klLCuB6i-UtBhbBd-EwAPX/exec';
+    var targetCountdown = null;
+    var sesiPassword = '';
+
+    // ... semua fungsi login, panel, jalankanAksi, jalankanPerintah, tambahNaskahBaru: SAMA PERSIS ...
+
+    function tampilkanData(data) {
+      document.getElementById('statusDot').className = 'dot ' + (data.statusSistem ? 'aktif' : 'nonaktif');
+      document.getElementById('statusTeks').innerText = data.statusSistem ? 'Sistem berjalan normal' : 'Sistem tidak aktif';
+      document.getElementById('waktuUpdate').innerText = data.waktuUpdate;
+      document.getElementById('jadwalBerikutnya').innerText = data.jadwalBerikutnyaTeks;
+
+      targetCountdown = data.jadwalBerikutnyaTimestamp ? new Date(data.jadwalBerikutnyaTimestamp) : null;
+      if (!targetCountdown) document.getElementById('countdown').innerText = '';
+
+      document.getElementById('cards').innerHTML =
+        buatKartu('Total Naskah', data.total) +
+        buatKartu('Sudah Posting', data.selesai) +
+        buatKartu('Belum Posting', data.pending) +
+        buatKartu('Error', data.error) +
+        buatKartu('Tingkat Keberhasilan', data.successRate + '%');
+
+      function statusHtml(status, link) {
+        if (status === 'Posted' && link) return '<a href="' + link + '" target="_blank" class="link-posted">Posted</a>';
+        if (status && status.indexOf('Error') === 0) return '<span class="status-error">' + status + '</span>';
+        return '<span class="status-pending">' + (status || 'Belum Posting') + '</span>';
+      }
+
+      var tbody = document.getElementById('tabelBody');
+      tbody.innerHTML = '';
+      data.rows.forEach(function (row) {
+        var tr = document.createElement('tr');
+        tr.innerHTML =
+          '<td>' + row.judul + '</td>' +
+          '<td>' + row.lokasi + '</td>' +
+          '<td>' + row.jadwal + '</td>' +
+          '<td>' + statusHtml(row.statusFB, row.linkFB) + '</td>' +
+          '<td>' + statusHtml(row.statusIG, row.linkIG) + '</td>';
+        tbody.appendChild(tr);
+      });
+
+      var schedulePanel = document.getElementById('schedulePanel');
+      schedulePanel.innerHTML = '';
+      var antrean = data.rows
+        .filter(function (r) { return r.timestamp && !r.sudahSelesai; })
+        .sort(function (a, b) { return a.timestamp - b.timestamp; })
+        .slice(0, 30);
+
+      if (antrean.length === 0) schedulePanel.innerHTML = '<div class="schedule-item">Tidak ada naskah terjadwal.</div>';
+
+      antrean.forEach(function (item) {
+        var icon = item.timestamp < Date.now() ? '<span class="jam-icon">⏳</span>' : '<span class="cek">✔</span>';
+        var div = document.createElement('div');
+        div.className = 'schedule-item';
+        div.innerHTML = '<div><span class="waktu">' + item.jadwal + '</span> - ' + item.judul + '</div>' + icon;
+        schedulePanel.appendChild(div);
+      });
+    }
+
+    // ... buatKartu, perbaruiJam, masehiKeHijri, muatData: SAMA PERSIS seperti kode aslimu ...
+  </script>
+</body>
+</html>
