@@ -200,4 +200,60 @@ function tampilkanData(data) {
       '<td data-label="Jadwal">' + row.jadwal + '</td>' +
       '<td data-label="Status FB">' + statusHtml(row.statusFB, row.linkFB) + '</td>' +
       '<td data-label="Status IG">' + statusHtml(row.statusIG, row.linkIG) + '</td>';
-    tbody.appendChild(
+   tbody.appendChild(tr);
+  });
+
+  var schedulePanel = document.getElementById('schedulePanel');
+  schedulePanel.innerHTML = '';
+  var antrean = data.rows
+    .filter(function (r) { return r.timestamp && !r.sudahSelesai; })
+    .sort(function (a, b) { return a.timestamp - b.timestamp; });
+
+  if (antrean.length === 0) {
+    schedulePanel.innerHTML = '<div class="schedule-item">Tidak ada naskah terjadwal.</div>';
+  }
+
+  antrean.forEach(function (item) {
+    var icon = item.timestamp < Date.now() ? '<span class="jam-icon">&#9203;</span>' : '<span class="cek">&#10003;</span>';
+    var div = document.createElement('div');
+    div.className = 'schedule-item';
+    div.innerHTML = '<div><span class="waktu">' + item.jadwal + '</span> - ' + item.judul + '</div>' + icon;
+    schedulePanel.appendChild(div);
+  });
+}
+
+function perbaruiJam() {
+  var now = new Date();
+  document.getElementById('jamSekarang').innerText = now.toLocaleTimeString('id-ID');
+
+  var opsiMasehi = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+  var tanggalMasehi = now.toLocaleDateString('id-ID', opsiMasehi);
+
+  var tanggalHijri = '';
+  try {
+    tanggalHijri = new Intl.DateTimeFormat('id-ID-u-ca-islamic', { day: 'numeric', month: 'long', year: 'numeric' }).format(now) + ' H';
+  } catch (e) {}
+
+  document.getElementById('tanggalHijriMasehi').innerText = tanggalMasehi + (tanggalHijri ? ' | ' + tanggalHijri : '');
+
+  if (targetCountdown) {
+    var selisih = targetCountdown - now;
+    if (selisih > 0) {
+      var jam = Math.floor(selisih / 3600000);
+      var menit = Math.floor((selisih % 3600000) / 60000);
+      var detik = Math.floor((selisih % 60000) / 1000);
+      var teks = (jam < 10 ? '0' : '') + jam + ':' + (menit < 10 ? '0' : '') + menit + ':' + (detik < 10 ? '0' : '') + detik;
+      document.getElementById('countdown').innerText = '(' + teks + ')';
+    } else {
+      document.getElementById('countdown').innerText = '';
+    }
+  }
+}
+
+muatData();
+perbaruiJam();
+setInterval(muatData, 15000);
+setInterval(perbaruiJam, 1000);
+</script>
+</body>
+</html>
