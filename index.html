@@ -278,11 +278,14 @@ function jalankan(actionName) {
 
 function jalankan(namaFungsi) {
   document.getElementById('pesanAksi').innerText = 'Memproses...';
-  google.script.run.withSuccessHandler(function(hasil) {
-    document.getElementById('pesanAksi').innerText = (hasil && hasil.pesan) || 'Selesai.';
-  })[namaFungsi]();
+  panggilServer(namaFungsi)
+    .then(function(hasil) {
+      document.getElementById('pesanAksi').innerText = (hasil && hasil.pesan) || 'Selesai.';
+    })
+    .catch(function(err) {
+      document.getElementById('pesanAksi').innerText = 'Error: ' + err.message;
+    });
 }
-
 // GANTI dengan URL Web App Apps Script hasil deploy, akhiri dengan ?action=data
 var URL_WEBAPP = 'https://script.google.com/macros/s/AKfycbwBSgBloFuIdWx9MoltGAGfdFwLD7YsWj4tX6dLv3K3dI2OhTPJunDjCyFn11Z0oGmYiw/exec?action=data';
 var targetCountdown = null;
