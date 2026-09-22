@@ -238,11 +238,13 @@ function tutupPanelSettings() {
 var URL_WEBAPP = 'https://script.google.com/macros/s/AKfycbwBSgBloFuIdWx9MoltGAGfdFwLD7YsWj4tX6dLv3K3dI2OhTPJunDjCyFn11Z0oGmYiw/exec'; // ganti sesuai URL asli kamu
 
 function panggilServer(action, data) {
-  return fetch(URL_WEBAPP + '?action=' + action, {
+  var payload = Object.assign({ action: action }, data || {});
+  return fetch(URL_WEBAPP, {
     method: 'POST',
-    body: JSON.stringify(data || {})
+    body: JSON.stringify(payload)
   }).then(function(res) { return res.json(); });
 }
+
 
 function prosesLogin() {
   var user = document.getElementById('inputUser').value;
