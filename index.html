@@ -8,6 +8,73 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
+
+.btn-gear {
+  background: transparent;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  color: #cfd8ff;
+  transition: transform 0.3s;
+}
+.btn-gear:hover { transform: rotate(90deg); }
+
+.settings-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,10,0.4);
+  z-index: 999;
+}
+
+.settings-panel {
+  display: none;
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 340px;
+  max-width: 90%;
+  background: rgba(10, 15, 40, 0.85);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(100,120,255,0.3);
+  border-radius: 14px;
+  padding: 20px;
+  color: #eaeaff;
+  z-index: 1000;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+}
+
+.settings-panel input {
+  width: 100%;
+  padding: 8px;
+  margin: 6px 0;
+  border-radius: 6px;
+  border: 1px solid #444;
+  background: #10132a;
+  color: #fff;
+  box-sizing: border-box;
+}
+
+.settings-panel button.aksi {
+  width: 100%;
+  padding: 8px;
+  margin: 4px 0;
+  border: none;
+  border-radius: 6px;
+  background: #2b3570;
+  color: #fff;
+  cursor: pointer;
+}
+.settings-panel button.aksi:hover { background: #3b47a0; }
+
+.settings-close {
+  position: absolute;
+  top: 8px; right: 12px;
+  cursor: pointer;
+  color: #aaa;
+  font-size: 18px;
+}
+  
 :root{
   --bg:#0f172a; --panel:#1e293b; --panel2:#243244; --text:#e2e8f0; --muted:#94a3b8;
   --fb:#3b5998; --ig1:#f09433; --ig2:#dc2743; --ig3:#bc1888;
@@ -82,6 +149,32 @@ tr:hover{background:#22314654;}
 </head>
 <body>
 
+<button id="btnGear" class="btn-gear" onclick="bukaPanelSettings()">⚙️</button>
+
+<div class="settings-overlay" id="settingsOverlay" onclick="tutupPanelSettings()"></div>
+<div class="settings-panel" id="settingsPanel">
+  <span class="settings-close" onclick="tutupPanelSettings()">✕</span>
+
+  <div id="loginBox">
+    <h3>Login Pengaturan</h3>
+    <input type="text" id="inputUser" placeholder="Username">
+    <input type="password" id="inputPass" placeholder="Password">
+    <button class="aksi" onclick="prosesLogin()">Masuk</button>
+    <p id="pesanLogin" style="color:#ff8080;font-size:13px;"></p>
+  </div>
+
+  <div id="kontrolBox" style="display:none;">
+    <h3>Panel Kontrol</h3>
+    <button class="aksi" onclick="jalankan('aktifkanSistemPosting')">Aktifkan Sistem</button>
+    <button class="aksi" onclick="jalankan('nonaktifkanSistemPosting')">Nonaktifkan Sistem</button>
+    <button class="aksi" onclick="jalankan('perbaikiSemuaLinkFoto')">Perbaiki Link Foto</button>
+    <button class="aksi" onclick="jalankan('perbaikiSemuaLokasi')">Perbaiki Lokasi</button>
+    <button class="aksi" onclick="jalankan('perbaikiIzinSemuaGambar')">Perbaiki Izin Gambar</button>
+    <button class="aksi" onclick="jalankan('cekDanRefreshToken')">Refresh Token</button>
+    <p id="pesanAksi" style="color:#8fffb0;font-size:13px;"></p>
+  </div>
+</div>  
+
 <div class="header">
   <div class="brand">
     <img src="logo.png" alt="Logo Ishbiruu Media" class="logo">
@@ -135,6 +228,38 @@ tr:hover{background:#22314654;}
 </div>
 
 <script>
+
+function bukaPanelSettings() {
+  document.getElementById('settingsOverlay').style.display = 'block';
+  document.getElementById('settingsPanel').style.display = 'block';
+}
+function tutupPanelSettings() {
+  document.getElementById('settingsOverlay').style.display = 'none';
+  document.getElementById('settingsPanel').style.display = 'none';
+}
+
+function prosesLogin() {
+  var user = document.getElementById('inputUser').value;
+  var pass = document.getElementById('inputPass').value;
+  document.getElementById('pesanLogin').innerText = 'Memeriksa...';
+
+  google.script.run.withSuccessHandler(function(hasil) {
+    if (hasil.sukses) {
+      document.getElementById('loginBox').style.display = 'none';
+      document.getElementById('kontrolBox').style.display = 'block';
+    } else {
+      document.getElementById('pesanLogin').innerText = hasil.pesan;
+    }
+  }).validasiLogin(user, pass);
+}
+
+function jalankan(namaFungsi) {
+  document.getElementById('pesanAksi').innerText = 'Memproses...';
+  google.script.run.withSuccessHandler(function(hasil) {
+    document.getElementById('pesanAksi').innerText = (hasil && hasil.pesan) || 'Selesai.';
+  })[namaFungsi]();
+}
+
 // GANTI dengan URL Web App Apps Script hasil deploy, akhiri dengan ?action=data
 var URL_WEBAPP = 'https://script.google.com/macros/s/AKfycbwBSgBloFuIdWx9MoltGAGfdFwLD7YsWj4tX6dLv3K3dI2OhTPJunDjCyFn11Z0oGmYiw/exec?action=data';
 var targetCountdown = null;
