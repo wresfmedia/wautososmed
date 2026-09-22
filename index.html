@@ -235,19 +235,43 @@ function tutupPanelSettings() {
   document.getElementById('settingsPanel').style.display = 'none';
 }
 
+var URL_WEBAPP = 'https://script.google.com/macros/s/AKfycb.../exec'; // ganti sesuai URL asli kamu
+
+function panggilServer(action, data) {
+  return fetch(URL_WEBAPP + '?action=' + action, {
+    method: 'POST',
+    body: JSON.stringify(data || {})
+  }).then(function(res) { return res.json(); });
+}
+
 function prosesLogin() {
   var user = document.getElementById('inputUser').value;
   var pass = document.getElementById('inputPass').value;
   document.getElementById('pesanLogin').innerText = 'Memeriksa...';
 
-  google.script.run.withSuccessHandler(function(hasil) {
-    if (hasil.sukses) {
-      document.getElementById('loginBox').style.display = 'none';
-      document.getElementById('kontrolBox').style.display = 'block';
-    } else {
-      document.getElementById('pesanLogin').innerText = hasil.pesan;
-    }
-  }).validasiLogin(user, pass);
+  panggilServer('login', { username: user, password: pass })
+    .then(function(hasil) {
+      if (hasil.sukses) {
+        document.getElementById('loginBox').style.display = 'none';
+        document.getElementById('kontrolBox').style.display = 'block';
+      } else {
+        document.getElementById('pesanLogin').innerText = hasil.pesan;
+      }
+    })
+    .catch(function(err) {
+      document.getElementById('pesanLogin').innerText = 'Error: ' + err.message;
+    });
+}
+
+function jalankan(actionName) {
+  document.getElementById('pesanAksi').innerText = 'Memproses...';
+  panggilServer(actionName)
+    .then(function(hasil) {
+      document.getElementById('pesanAksi').innerText = hasil.pesan || 'Selesai.';
+    })
+    .catch(function(err) {
+      document.getElementById('pesanAksi').innerText = 'Error: ' + err.message;
+    });
 }
 
 function jalankan(namaFungsi) {
